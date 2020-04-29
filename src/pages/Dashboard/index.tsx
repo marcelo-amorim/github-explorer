@@ -1,5 +1,6 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
 import logoImg from '../../assets/logo.svg';
@@ -18,7 +19,22 @@ interface Repository {
 const Dashboard: React.FC = () => {
   const [newRepo, setNewRepo] = useState('');
   const [inputError, setInputError] = useState('');
-  const [repositories, setRepositories] = useState<Repository[]>([]);
+  const [repositories, setRepositories] = useState<Repository[]>(() => {
+    const storedRepositories = localStorage.getItem(
+      '@GithubExplorer:repositories',
+    );
+    if (storedRepositories) {
+      return JSON.parse(storedRepositories);
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(
+      '@GithubExplorer:repositories',
+      JSON.stringify(repositories),
+    );
+  }, [repositories]);
 
   async function handleAddRepository(
     event: FormEvent<HTMLFormElement>,
@@ -39,7 +55,7 @@ const Dashboard: React.FC = () => {
       setNewRepo('');
       setInputError('');
     } catch (err) {
-      setInputError('Erro na busca do repositório.');
+      setInputError('Erro na bu-sca do repositório.');
     }
   }
 
@@ -61,7 +77,10 @@ const Dashboard: React.FC = () => {
 
       <Repositories>
         {repositories.map((repository) => (
-          <a key={repository.full_name} href="teste">
+          <Link
+            key={repository.full_name}
+            to={`/repositories/${repository.full_name}`}
+          >
             <img
               src={repository.owner.avatar_url}
               alt={repository.owner.login}
@@ -72,7 +91,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             <FiChevronRight size={20} />
-          </a>
+          </Link>
         ))}
       </Repositories>
     </>
